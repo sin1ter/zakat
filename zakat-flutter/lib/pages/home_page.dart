@@ -105,16 +105,52 @@ class _HomePageState extends State<HomePage> {
   Future<double> goldValue() async {
     try {
       var goldPerGram = await getGoldPrice();
-      var euroBDT = await getEuroTotaka();
-      var validGoldPriceEur = goldPerGram * 87.48;
-      var validGoldPriceBdt = validGoldPriceEur * euroBDT;
-      print("87.48 gram price of gold in Euro: $validGoldPriceEur");
-      print("87.48 gram price of gold in Taka: $validGoldPriceBdt");
-      return validGoldPriceBdt;
+      print(goldPerGram);
+      return goldPerGram;
     } catch (e) {
       print("Error calculating gold value: $e");
       throw Exception("Failed to calculate gold value");
     }
+  }
+
+  Future<void> calculateZakat() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      res2 = assetsTotal - expenseTotal;
+      var validGoldPriceBDT = await goldValue();
+      print(validGoldPriceBDT);
+      print("87.48 gram Gold Price in BDT  : $validGoldPriceBDT");
+      double zakatAmount = 0;
+
+      if (res2 >= validGoldPriceBDT) {
+        res3 = res2 - validGoldPriceBDT;
+        zakatAmount = res3 * 0.025;
+      }
+
+      setState(() {
+        zakat = zakatAmount;
+      });
+
+      print("ZAKAT : $zakat");
+    } catch (error) {
+      print("Error calculating Zakat: $error");
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void totalExpenses() {
+    setState(() {
+      var intExpenses = int.tryParse(_expenses.text) ?? 0;
+      var intShortTermDebts = int.tryParse(_shortTermDebts.text) ?? 0;
+      var intOtherExpenses = int.tryParse(_otherExpenses.text) ?? 0;
+      expenseTotal = intExpenses + intShortTermDebts + intOtherExpenses;
+    });
   }
 
   void totalAssets() {
@@ -135,47 +171,6 @@ class _HomePageState extends State<HomePage> {
           intGoods +
           intOtherAssets;
     });
-  }
-
-  void totalExpenses() {
-    setState(() {
-      var intExpenses = int.tryParse(_expenses.text) ?? 0;
-      var intShortTermDebts = int.tryParse(_shortTermDebts.text) ?? 0;
-      var intOtherExpenses = int.tryParse(_otherExpenses.text) ?? 0;
-      expenseTotal = intExpenses + intShortTermDebts + intOtherExpenses;
-    });
-  }
-
-  Future<void> calculateZakat() async {
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      res2 = assetsTotal - expenseTotal;
-      var validGoldPriceBDT = await goldValue();
-
-      print("87.48 gram Gold Price in BDT  : $validGoldPriceBDT");
-
-      double zakatAmount = 0;
-
-      if (res2 >= validGoldPriceBDT) {
-        res3 = res2 - validGoldPriceBDT;
-        zakatAmount = res3 * 0.025;
-      }
-
-      setState(() {
-        zakat = zakatAmount;
-      });
-
-      print("ZAKAT : $zakat");
-    } catch (error) {
-      print("Error calculating Zakat: $error");
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
   }
 
   @override
